@@ -1,0 +1,28 @@
+# Unreal generated folders
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+
+# Visual Studio / Rider / IDE
+.vs/
+.vscode/
+.idea/
+*.sln.DotSettings.user
+*.VC.db
+*.VC.opendb
+*.opensdf
+*.sdf
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build/package output
+Build/
+PackagedBuilds/
+Releases/
+
+# OS files
+.DS_Store
+Thumbs.db
