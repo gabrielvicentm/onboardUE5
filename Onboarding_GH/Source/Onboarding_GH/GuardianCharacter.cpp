@@ -5,7 +5,7 @@
 #include "EnhancedInputComponent.h" //include do componente de input melhorado, que eu uso para bindar as ações de input do personagem  
 #include "EnhancedInputSubsystems.h" //include dos subsistemas de input melhorado, que eu uso para adicionar o input do personagem
 #include "GameFramework/CharacterMovementComponent.h" //include do componente de movimentação do personagem, que eu uso para definir a velocidade de movimentação do personagem
-#include "GameFramework/SpringArmComponent.h"//include do componente do braço da câmera, que eu uso para criar o braço da câmera( o sring arm component)
+#include "GameFramework/SpringArmComponent.h"//inclde do componente do braço da câmera, que eu uso para criar o braço da câmera( o sring arm component)
 
 AGuardianCharacter::AGuardianCharacter()
 {

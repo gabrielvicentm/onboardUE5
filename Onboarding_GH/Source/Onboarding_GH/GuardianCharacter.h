@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h" //esse include é o include base da Unreal Engine, ele inclui as definições básicas da engine, tipos de dados, macros...
 #include "GameFramework/Character.h" //esse include é o do Character que é a classe pai da classe que eu criei(AGuardianCharacter), que é a classe que define o personagem do jogo, e que eu herdo para criar o meu personagem  
-#include "InputActionValue.h" //esse include é a classe que define o valor do input, uso para pegar o input do jogador e transformar em movimento do personagem
+#include "InputActionValue.h" //esse include é a casse que define o valor do input, uso para pegar o input do jogador e transformar em movimento do personagem
 //OBS: esse sempre tem que ser o último include
 #include "GuardianCharacter.generated.h" //é o arquivo gerado pela UE5 que contém os paranaue que precisa.
 
