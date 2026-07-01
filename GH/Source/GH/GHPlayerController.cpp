@@ -5,33 +5,6 @@
 #include "EnhancedInputSubsystems.h"
 #include "Engine/LocalPlayer.h"
 #include "InputMappingContext.h"
-#include "Blueprint/UserWidget.h"
-#include "GH.h"
-#include "Widgets/Input/SVirtualJoystick.h"
-
-void AGHPlayerController::BeginPlay()
-{
-	Super::BeginPlay();
-
-	// only spawn touch controls on local player controllers
-	if (SVirtualJoystick::ShouldDisplayTouchInterface() && IsLocalPlayerController())
-	{
-		// spawn the mobile controls widget
-		MobileControlsWidget = CreateWidget<UUserWidget>(this, MobileControlsWidgetClass);
-
-		if (MobileControlsWidget)
-		{
-			// add the controls to the player screen
-			MobileControlsWidget->AddToPlayerScreen(0);
-
-		} else {
-
-			UE_LOG(LogGH, Error, TEXT("Could not spawn mobile controls widget."));
-
-		}
-
-	}
-}
 
 void AGHPlayerController::SetupInputComponent()
 {
@@ -46,15 +19,6 @@ void AGHPlayerController::SetupInputComponent()
 			for (UInputMappingContext* CurrentContext : DefaultMappingContexts)
 			{
 				Subsystem->AddMappingContext(CurrentContext, 0);
-			}
-
-			// only add these IMCs if we're not using mobile touch input
-			if (!SVirtualJoystick::ShouldDisplayTouchInterface())
-			{
-				for (UInputMappingContext* CurrentContext : MobileExcludedMappingContexts)
-				{
-					Subsystem->AddMappingContext(CurrentContext, 0);
-				}
 			}
 		}
 	}
