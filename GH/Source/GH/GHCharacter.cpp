@@ -3,6 +3,9 @@
 #include "GHCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/HealthComponent.h"
+#include "DrawDebugHelpers.h"
+#include "Engine/OverlapResult.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/Controller.h"
@@ -33,6 +36,8 @@ AGHCharacter::AGHCharacter()
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
@@ -58,6 +63,12 @@ void AGHCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AGHCharacter::Look);
+
+		// Attacking
+		if (AttackAction)
+		{
+			EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &AGHCharacter::Attack);
+		}
 	}
 	else
 	{
@@ -81,6 +92,11 @@ void AGHCharacter::Look(const FInputActionValue& Value)
 
 	// route the input
 	DoLook(LookAxisVector.X, LookAxisVector.Y);
+}
+
+void AGHCharacter::Attack()
+{
+	DoAttack();
 }
 
 void AGHCharacter::DoMove(float Right, float Forward)
@@ -113,3 +129,86 @@ void AGHCharacter::DoLook(float Yaw, float Pitch)
 	}
 }
 
+void AGHCharacter::DoAttack()
+{
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+
+	const float CurrentTime = World->GetTimeSeconds();
+	if (CurrentTime - LastAttackTime < AttackCooldown)
+	{
+		return;
+	}
+
+	LastAttackTime = CurrentTime;
+
+	const FVector AttackCenter = GetActorLocation() + GetActorForwardVector() * AttackDistance;
+
+	FCollisionQueryParams QueryParams(SCENE_QUERY_STAT(GHCharacterAttack), false);
+	QueryParams.AddIgnoredActor(this);
+
+	FCollisionObjectQueryParams ObjectQueryParams;
+	ObjectQueryParams.AddObjectTypesToQuery(ECC_Pawn);
+
+	TArray<FOverlapResult> Overlaps;
+	const bool bHitSomething = World->OverlapMultiByObjectType(
+		Overlaps,
+		AttackCenter,
+		FQuat::Identity,
+		ObjectQueryParams,
+		FCollisionShape::MakeSphere(AttackRadius),
+		QueryParams
+	);
+
+	AActor* BestTarget = nullptr;
+	float BestDistanceSquared = TNumericLimits<float>::Max();
+
+	if (bHitSomething)
+	{
+		for (const FOverlapResult& Overlap : Overlaps)
+		{
+			AActor* HitActor = Overlap.GetActor();
+			if (!HitActor || HitActor == this)
+			{
+				continue;
+			}
+
+			UHealthComponent* TargetHealth = HitActor->FindComponentByClass<UHealthComponent>();
+			if (!TargetHealth || TargetHealth->IsDead())
+			{
+				continue;
+			}
+
+			const float DistanceSquared = FVector::DistSquared(GetActorLocation(), HitActor->GetActorLocation());
+			if (DistanceSquared < BestDistanceSquared)
+			{
+				BestDistanceSquared = DistanceSquared;
+				BestTarget = HitActor;
+			}
+		}
+	}
+
+	if (BestTarget)
+	{
+		if (UHealthComponent* TargetHealth = BestTarget->FindComponentByClass<UHealthComponent>())
+		{
+			TargetHealth->ApplyDamage(AttackDamage, this);
+			UE_LOG(LogGH, Warning, TEXT("%s hit %s for %.1f damage."), *GetName(), *BestTarget->GetName(), AttackDamage);
+		}
+	}
+	else
+	{
+		UE_LOG(LogGH, Warning, TEXT("%s attack missed."), *GetName());
+	}
+
+	if (bDrawAttackDebug)
+	{
+		const FColor DebugColor = BestTarget ? FColor::Green : FColor::Silver;
+
+		DrawDebugSphere(World, AttackCenter, AttackRadius, 24, DebugColor, false, 0.5f);
+		DrawDebugLine(World, GetActorLocation(), AttackCenter, DebugColor, false, 0.5f, 0, 2.0f);
+	}
+}

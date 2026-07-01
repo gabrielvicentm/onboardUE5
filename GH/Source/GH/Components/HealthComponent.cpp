@@ -1,34 +1,59 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Components/HealthComponent.h"
 
-// Sets default values for this component's properties
 UHealthComponent::UHealthComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
-
-	// ...
+    PrimaryComponentTick.bCanEverTick = false;
 }
 
-
-// Called when the game starts
 void UHealthComponent::BeginPlay()
 {
-	Super::BeginPlay();
+    Super::BeginPlay();
 
-	// ...
-	
+    CurrentHealth = MaxHealth;
+    bIsDead = false;
 }
 
-
-// Called every frame
-void UHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UHealthComponent::ApplyDamage(float DamageAmount, AActor* DamageCauser)
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+    if (bIsDead || DamageAmount <= 0.0f)
+    {
+        return;
+    }
 
-	// ...
+    const float PreviousHealth = CurrentHealth;
+    CurrentHealth = FMath::Clamp(CurrentHealth - DamageAmount, 0.0f, MaxHealth);
+    const float Delta = CurrentHealth - PreviousHealth;
+
+    UE_LOG(
+        LogTemp,
+        Warning,
+        TEXT("%s recebeu %.1f de dano. Vida: %.1f / %.1f"),
+        *GetOwner()->GetName(),
+        DamageAmount,
+        CurrentHealth,
+        MaxHealth
+    );
+
+    OnHealthChanged.Broadcast(this, CurrentHealth, Delta, DamageCauser);
+
+    if (CurrentHealth <= 0.0f)
+    {
+        bIsDead = true;
+        UE_LOG(LogTemp, Error, TEXT("%s morreu"), *GetOwner()->GetName());
+        OnDeath.Broadcast(this, DamageCauser);
+    }
 }
 
+void UHealthComponent::Heal(float HealAmount)
+{
+    if (bIsDead || HealAmount <= 0.0f)
+    {
+        return;
+    }
+
+    const float PreviousHealth = CurrentHealth;
+    CurrentHealth = FMath::Clamp(CurrentHealth + HealAmount, 0.0f, MaxHealth);
+    const float Delta = CurrentHealth - PreviousHealth;
+
+    OnHealthChanged.Broadcast(this, CurrentHealth, Delta, nullptr);
+}

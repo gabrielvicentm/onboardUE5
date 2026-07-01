@@ -10,6 +10,7 @@
 class USpringArmComponent;
 class UCameraComponent;
 class UInputAction;
+class UHealthComponent;
 struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
@@ -30,6 +31,10 @@ class AGHCharacter : public ACharacter
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
+
+	/** Reusable health logic for damage and death */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
+	UHealthComponent* HealthComponent;
 	
 protected:
 
@@ -40,6 +45,25 @@ protected:
 	/** Look Input Action */
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* LookAction;
+
+	/** Attack Input Action */
+	UPROPERTY(EditAnywhere, Category="Input")
+	UInputAction* AttackAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Combat")
+	float AttackDamage = 20.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Combat")
+	float AttackDistance = 120.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Combat")
+	float AttackRadius = 90.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Combat")
+	float AttackCooldown = 0.6f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Debug")
+	bool bDrawAttackDebug = true;
 
 public:
 
@@ -59,6 +83,9 @@ protected:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
+	/** Called for attack input */
+	void Attack();
+
 public:
 
 	/** Handles move inputs from either controls or UI interfaces */
@@ -69,6 +96,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoLook(float Yaw, float Pitch);
 
+	/** Handles attack inputs from either controls or UI interfaces */
+	UFUNCTION(BlueprintCallable, Category="Input")
+	virtual void DoAttack();
+
 public:
 
 	/** Returns CameraBoom subobject **/
@@ -76,5 +107,11 @@ public:
 
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-};
 
+	/** Returns HealthComponent subobject **/
+	FORCEINLINE UHealthComponent* GetHealthComponent() const { return HealthComponent; }
+
+private:
+
+	float LastAttackTime = -999.0f;
+};

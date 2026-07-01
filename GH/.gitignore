@@ -8,6 +8,7 @@ Saved/
 Build/
 PackagedBuilds/
 Releases/
+Content/IdaFaber/
 
 # Ignore source control lock files and UBT targets
 *.generated.h

@@ -1,28 +1,61 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "HealthComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(
+    FOnHealthChangedSignature,
+    UHealthComponent*, HealthComponent,
+    float, CurrentHealth,
+    float, Delta,
+    AActor*, DamageCauser
+);
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
+    FOnDeathSignature,
+    UHealthComponent*, HealthComponent,
+    AActor*, DamageCauser
+);
+
+UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class GH_API UHealthComponent : public UActorComponent
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
-public:	
-	// Sets default values for this component's properties
-	UHealthComponent();
+public:
+    UHealthComponent();
+
+    UFUNCTION(BlueprintCallable, Category="Health")
+    void ApplyDamage(float DamageAmount, AActor* DamageCauser);
+
+    UFUNCTION(BlueprintCallable, Category="Health")
+    void Heal(float HealAmount);
+
+    UFUNCTION(BlueprintPure, Category="Health")
+    float GetCurrentHealth() const { return CurrentHealth; }
+
+    UFUNCTION(BlueprintPure, Category="Health")
+    float GetMaxHealth() const { return MaxHealth; }
+
+    UFUNCTION(BlueprintPure, Category="Health")
+    bool IsDead() const { return bIsDead; }
+
+    UPROPERTY(BlueprintAssignable, Category="Health")
+    FOnHealthChangedSignature OnHealthChanged;
+
+    UPROPERTY(BlueprintAssignable, Category="Health")
+    FOnDeathSignature OnDeath;
 
 protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
+    virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Health")
+    float MaxHealth = 100.0f;
 
-		
+    UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Health")
+    float CurrentHealth = 0.0f;
+
+    UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Health")
+    bool bIsDead = false;
 };
