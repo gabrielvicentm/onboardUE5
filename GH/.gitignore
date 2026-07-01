@@ -1,0 +1,46 @@
+# ==========================================
+# Unreal Engine Generated Folders & Files
+# ==========================================
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+Build/
+PackagedBuilds/
+Releases/
+
+# Ignore source control lock files and UBT targets
+*.generated.h
+*.generated.cpp
+.ubtignore
+
+# Ignore build and intermediate folders inside Plugins
+Plugins/**/Binaries/
+Plugins/**/Intermediate/
+
+# ==========================================
+# IDEs & Compilers
+# ==========================================
+
+# Visual Studio Code (Especifico para o seu caso)
+.vscode/
+
+# Visual Studio / Rider (Bom manter caso trabalhe em equipe)
+.vs/
+.idea/
+*.sln
+*.sln.DotSettings.user
+*.VC.db
+*.VC.opendb
+*.opensdf
+*.sdf
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# ==========================================
+# OS Files
+# ==========================================
+.DS_Store
+Thumbs.db
